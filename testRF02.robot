@@ -15,31 +15,38 @@ Open My Browser
     Maximize Browser Window
 
 Click Login Button
-    # เผื่อบางหน้าปุ่มเป็น <button> หรือ <a>
     Wait Until Element Is Visible    xpath=//button[contains(.,'เข้าสู่ระบบ')] | //a[contains(.,'เข้าสู่ระบบ')]    20s
-    Click Element    xpath=//button[contains(.,'เข้าสู่ระบบ')] | //a[contains(.,'เข้าสู่ระบบ')]
+    Click Element                    xpath=//button[contains(.,'เข้าสู่ระบบ')] | //a[contains(.,'เข้าสู่ระบบ')]
 
-Ensure On LINE Login Page
-    ${loc}=    Get Location
-    Run Keyword If    '${LINE_HOST}' not in '${loc}'    Click Login Button
+Wait Until On LINE Login
     Wait Until Location Contains    ${LINE_HOST}    20s
     Location Should Contain         ${LINE_HOST}
 
+Click QR Code Login
+    # LINE อาจทำเป็น <button> หรือ <a> เลยครอบ 2 แบบ
+    Wait Until Page Contains Element    xpath=//button[contains(.,'QR code login')] | //a[contains(.,'QR code login')]    20s
+    Click Element                       xpath=//button[contains(.,'QR code login')] | //a[contains(.,'QR code login')]
+
 Wait Until Back To App
-    # ให้เวลาทำ QR/OTP เอง แล้วรอ redirect กลับเว็บ
     Wait Until Location Contains    ${APP_HOST}    120s
     Location Should Contain         ${APP_HOST}
 
 *** Test Cases ***
-F01_1_Click_Login_Should_Redirect_To_LINE
-    [Documentation]    คลิกเข้าสู่ระบบแล้วต้อง redirect ไปหน้า LINE Login
+F01_1_Go_To_LINE_And_Click_QR_Login
+    [Documentation]    กดเข้าสู่ระบบ -> ไปหน้า LINE -> กดปุ่ม QR code login
     Click Login Button
-    Wait Until Location Contains    ${LINE_HOST}    20s
-    Location Should Contain         ${LINE_HOST}
+    Wait Until On LINE Login
+    Click QR Code Login
 
-F01_2_Manual_Login_QR_OTP_Then_Return_To_App
-    [Documentation]    ทำ LINE Login/QR/OTP ด้วยมือ แล้วกลับเว็บ และเห็นคำว่า “ยินดีต้อนรับ”
-    Ensure On LINE Login Page
+F01_2_Manual_Scan_QR_Then_Return_To_App
+    [Documentation]    หลังจากกด QR code login ให้ผู้ใช้สแกน/ยืนยันเอง แล้ว Robot รอ redirect กลับเว็บและเช็คว่าเข้าได้
+    Click Login Button
+    Wait Until On LINE Login
+    Click QR Code Login
+
+    # ทำ QR/ยืนยันในมือถือเองภายใน 120 วินาที
     Wait Until Back To App
-    Wait Until Page Contains        ยินดีต้อนรับ    30s
-    Page Should Contain             ยินดีต้อนรับ
+
+    # เช็คว่ากลับมา “หน้าในระบบ” (จากรูปที่คุณเคยส่งมีคำว่า 'ยินดีต้อนรับ')
+    Wait Until Page Contains    ยินดีต้อนรับ    30s
+    Page Should Contain         ยินดีต้อนรับ
